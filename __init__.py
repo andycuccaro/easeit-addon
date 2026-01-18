@@ -652,76 +652,76 @@ class EASING_PT_presets_base:
         # Symmetric easing presets
         layout.label(text="Symmetric Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_default_easing", text="Default", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_just_fine_easing", text="Just Fine", icon='IPO_SINE')
+        row.operator("graph.apply_default_easing", text="Default") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_just_fine_easing", text="Just Fine") #, icon='IPO_SINE')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_cubic_easing", text="Cubic", icon='IPO_CUBIC')
-        row.operator("graph.apply_exponential_easing", text="Exponential", icon='IPO_EXPO')
+        row.operator("graph.apply_cubic_easing", text="Cubic") #, icon='IPO_CUBIC')
+        row.operator("graph.apply_exponential_easing", text="Exponential") #, icon='IPO_EXPO')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_extreme_easing", text="Extreme", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_linear_easing", text="Linear", icon='IPO_LINEAR')
+        row.operator("graph.apply_extreme_easing", text="Extreme") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_linear_easing", text="Linear") #, icon='IPO_LINEAR')
         
-        layout.operator("graph.apply_max_easing", text="Max", icon='IPO_EASE_IN_OUT')
+        layout.operator("graph.apply_max_easing", text="Max") #, icon='IPO_EASE_IN_OUT')
         
         layout.separator()
         
         # Asymmetric easing presets
         layout.label(text="Asymmetric Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_smooth_easing", text="Smooth", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_easy_easing", text="Easy", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_smooth_easing", text="Smooth") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_easy_easing", text="Easy") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_super_smooth_easing", text="Super Smooth", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_smooth_out_easing", text="Smooth Out", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_super_smooth_easing", text="Super Smooth") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_smooth_out_easing", text="Smooth Out") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_easy_out_easing", text="Easy Out", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_super_smooth_out_easing", text="Super Smooth Out", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_easy_out_easing", text="Easy Out") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_super_smooth_out_easing", text="Super Smooth Out") #, icon='IPO_EASE_IN_OUT')
         
         layout.separator()
         
         # One-sided easing presets
         layout.label(text="One-Sided Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_ease_in_only_easing", text="Ease In Only", icon='IPO_EASE_OUT')
-        row.operator("graph.apply_ease_out_only_easing", text="Ease Out Only", icon='IPO_EASE_IN')
+        row.operator("graph.apply_ease_in_only_easing", text="Ease In Only") #, icon='IPO_EASE_OUT')
+        row.operator("graph.apply_ease_out_only_easing", text="Ease Out Only") #, icon='IPO_EASE_IN')
         
         layout.separator()
         
         # Advanced/Special easing presets
         layout.label(text="Advanced Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_explosive_easing", text="Explosive", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_springy_easing", text="Springy", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_explosive_easing", text="Explosive") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_springy_easing", text="Springy") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_overshoot1_easing", text="Overshoot 1", icon='IPO_BACK')
-        row.operator("graph.apply_overshoot2_easing", text="Overshoot 2", icon='IPO_BACK')
+        row.operator("graph.apply_overshoot1_easing", text="Overshoot 1") #, icon='IPO_BACK')
+        row.operator("graph.apply_overshoot2_easing", text="Overshoot 2") #, icon='IPO_BACK')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation1_easing", text="Anticipation 1", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_anticipation2_easing", text="Anticipation 2", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation1_easing", text="Anticipation 1") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation2_easing", text="Anticipation 2") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation3_easing", text="Anticipation 3", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_easy_going_easing", text="Easy Going", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation3_easing", text="Anticipation 3") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_easy_going_easing", text="Easy Going") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation_overshoot_easing", text="Antic + Over", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_agitated_easing", text="Agitated", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation_overshoot_easing", text="Antic + Over") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_agitated_easing", text="Agitated") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_very_late_stop_easing", text="Very Late Stop", icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_overshoot_x3_easing", text="Overshoot x3", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_very_late_stop_easing", text="Very Late Stop") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_overshoot_x3_easing", text="Overshoot x3") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_spring_back_easing", text="Spring Back", icon='IPO_ELASTIC')
-        row.operator("graph.apply_bouncy_easing", text="Bouncy", icon='IPO_BOUNCE')
+        row.operator("graph.apply_spring_back_easing", text="Spring Back") #, icon='IPO_ELASTIC')
+        row.operator("graph.apply_bouncy_easing", text="Bouncy") #, icon='IPO_BOUNCE')
         
-        layout.operator("graph.apply_weird_easing", text="Weird", icon='SHARPCURVE')
+        layout.operator("graph.apply_weird_easing", text="Weird") #, icon='SHARPCURVE')
 
 # Panel for Graph Editor
 class GRAPH_PT_easing_presets(EASING_PT_presets_base, bpy.types.Panel):
