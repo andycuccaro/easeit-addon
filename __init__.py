@@ -640,7 +640,7 @@ class EASING_PT_presets_base:
     """Base class for easing presets panel"""
     bl_label = "Easing Presets"
     bl_region_type = 'UI'
-    bl_category = "Easing"
+    bl_category = "Easit"
 
     def draw(self, context):
         layout = self.layout
