@@ -1,8 +1,8 @@
 bl_info = {
     "name": "EaseIt",
     "author": "Andy Cuccaro",
-    "version": (1, 0, 0),
-    "blender": (2, 83, 0),
+    "version": (0, 9, 0),
+    "blender": (2, 80, 0),
     "location": "Graph Editor > Sidebar > Easing",
     "description": "Apply easing presets to selected keyframes",
     "category": "Animation",
@@ -663,36 +663,42 @@ class GRAPH_OT_apply_bouncy_easing(GRAPH_OT_apply_advanced_easing_base):
         [1, 1, 1.024, 23.549, 0, 86.165, True, True, True]
     ]
 
-class EASING_PT_presets_base:
+class EASING_PT_presets_main:
     """Base class for easing presets panel"""
     bl_label = "Easing Presets"
     bl_region_type = 'UI'
     bl_category = "Easeit"
+    bl_description = "Select 2+ keyframes per curve"
+    
+    def draw(self, context):
+        layout = self.layout
+    
+# Simple Easing subpanel
+class EASING_PT_simple_base:
+    """Simple easing presets subpanel"""
+    bl_label = "Simple Easing"
+    bl_region_type = 'UI'
+    bl_category = "Easeit"
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
         
-        # Add some instructions
-        layout.label(text="Select 2+ keyframes per curve")
-        layout.separator()
-        
         # Symmetric easing presets
         layout.label(text="Symmetric Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_default_easing", text="Default") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_just_fine_easing", text="Just Fine") #, icon='IPO_SINE')
+        row.operator("graph.apply_default_easing", text="Default", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_just_fine_easing", text="Just Fine", icon='IPO_SINE')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_cubic_easing", text="Cubic") #, icon='IPO_CUBIC')
-        row.operator("graph.apply_exponential_easing", text="Exponential") #, icon='IPO_EXPO')
+        row.operator("graph.apply_cubic_easing", text="Cubic", icon='IPO_CUBIC')
+        row.operator("graph.apply_exponential_easing", text="Exponential", icon='IPO_EXPO')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_extreme_easing", text="Extreme") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_linear_easing", text="Linear") #, icon='IPO_LINEAR')
+        row.operator("graph.apply_extreme_easing", text="Extreme", icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_linear_easing", text="Linear", icon='IPO_LINEAR')
         
-        layout.operator("graph.apply_max_easing", text="Max") #, icon='IPO_EASE_IN_OUT')
-        
-        layout.separator()
+        layout.operator("graph.apply_max_easing", text="Max", icon='IPO_EASE_IN_OUT')
         
         # Asymmetric easing presets
         layout.label(text="Asymmetric Easing:")
@@ -708,18 +714,24 @@ class EASING_PT_presets_base:
         row.operator("graph.apply_easy_out_easing", text="Easy Out") #, icon='IPO_EASE_IN_OUT')
         row.operator("graph.apply_super_smooth_out_easing", text="Super Smooth Out") #, icon='IPO_EASE_IN_OUT')
         
-        layout.separator()
-        
         # One-sided easing presets
         layout.label(text="One-Sided Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_ease_in_only_easing", text="Ease In Only") #, icon='IPO_EASE_OUT')
-        row.operator("graph.apply_ease_out_only_easing", text="Ease Out Only") #, icon='IPO_EASE_IN')
+        row.operator("graph.apply_ease_in_only_easing", text="Ease In Only", icon='IPO_EASE_OUT')
+        row.operator("graph.apply_ease_out_only_easing", text="Ease Out Only", icon='IPO_EASE_IN')
         
-        layout.separator()
+# Advanced Easing subpanel
+class EASING_PT_advanced_base:
+    """Advanced easing presets subpanel"""
+    bl_label = "Advanced Easing"
+    bl_region_type = 'UI'
+    bl_category = "Easeit"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
         
         # Advanced/Special easing presets
-        layout.label(text="Advanced Easing:")
         row = layout.row(align=True)
         row.operator("graph.apply_explosive_easing", text="Explosive") #, icon='IPO_EASE_IN_OUT')
         row.operator("graph.apply_springy_easing", text="Springy") #, icon='IPO_EASE_IN_OUT')
@@ -729,11 +741,11 @@ class EASING_PT_presets_base:
         row.operator("graph.apply_overshoot2_easing", text="Overshoot 2") #, icon='IPO_BACK')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation1_easing", text="Anticipation 1") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_anticipation2_easing", text="Anticipation 2") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation1_easing", text="Anticipation 1", icon='IPO_BACK')
+        row.operator("graph.apply_anticipation2_easing", text="Anticipation 2", icon='IPO_BACK')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation3_easing", text="Anticipation 3") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation3_easing", text="Anticipation 3", icon='IPO_BACK')
         row.operator("graph.apply_easy_going_easing", text="Easy Going") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
@@ -745,21 +757,40 @@ class EASING_PT_presets_base:
         row.operator("graph.apply_overshoot_x3_easing", text="Overshoot x3") #, icon='IPO_EASE_IN_OUT')
         
         row = layout.row(align=True)
-        row.operator("graph.apply_spring_back_easing", text="Spring Back") #, icon='IPO_ELASTIC')
-        row.operator("graph.apply_bouncy_easing", text="Bouncy") #, icon='IPO_BOUNCE')
+        row.operator("graph.apply_spring_back_easing", text="Spring Back", icon='IPO_ELASTIC')
+        row.operator("graph.apply_bouncy_easing", text="Bouncy", icon='IPO_BOUNCE')
         
-        layout.operator("graph.apply_weird_easing", text="Weird") #, icon='SHARPCURVE')
+        layout.operator("graph.apply_weird_easing", text="Weird", icon='SHARPCURVE')
 
 # Panel for Graph Editor
-class GRAPH_PT_easing_presets(EASING_PT_presets_base, bpy.types.Panel):
-    """Panel for easing presets in Graph Editor sidebar"""
-    bl_idname = "GRAPH_PT_easing_presets"
+    
+class GRAPH_PT_easing_presets_main(EASING_PT_presets_main, bpy.types.Panel):
+    bl_idname = "GRAPH_PT_easing_presets_main"
+    bl_space_type = 'GRAPH_EDITOR'
+
+class GRAPH_PT_easing_simple(EASING_PT_simple_base, bpy.types.Panel):
+    bl_idname = "GRAPH_PT_easing_simple"
+    bl_parent_id = "GRAPH_PT_easing_presets_main"
+    bl_space_type = 'GRAPH_EDITOR'
+
+class GRAPH_PT_easing_advanced(EASING_PT_advanced_base, bpy.types.Panel):
+    bl_idname = "GRAPH_PT_easing_advanced"
+    bl_parent_id = "GRAPH_PT_easing_presets_main"
     bl_space_type = 'GRAPH_EDITOR'
 
 # Panel for Dope Sheet
-class DOPESHEET_PT_easing_presets(EASING_PT_presets_base, bpy.types.Panel):
-    """Panel for easing presets in Dope Sheet sidebar"""
-    bl_idname = "DOPESHEET_PT_easing_presets"
+class DOPESHEET_PT_easing_presets_main(EASING_PT_presets_main, bpy.types.Panel):
+    bl_idname = "DOPESHEET_PT_easing_presets_main"
+    bl_space_type = 'DOPESHEET_EDITOR'
+
+class DOPESHEET_PT_easing_simple(EASING_PT_simple_base, bpy.types.Panel):
+    bl_idname = "DOPESHEET_PT_easing_simple"
+    bl_parent_id = "DOPESHEET_PT_easing_presets_main"
+    bl_space_type = 'DOPESHEET_EDITOR'
+
+class DOPESHEET_PT_easing_advanced(EASING_PT_advanced_base, bpy.types.Panel):
+    bl_idname = "DOPESHEET_PT_easing_advanced"
+    bl_parent_id = "DOPESHEET_PT_easing_presets_main"
     bl_space_type = 'DOPESHEET_EDITOR'
 
 def register():
@@ -795,8 +826,14 @@ def register():
     bpy.utils.register_class(GRAPH_OT_apply_overshoot_x3_easing)
     bpy.utils.register_class(GRAPH_OT_apply_spring_back_easing)
     bpy.utils.register_class(GRAPH_OT_apply_bouncy_easing)
-    bpy.utils.register_class(GRAPH_PT_easing_presets)
-    bpy.utils.register_class(DOPESHEET_PT_easing_presets)
+    # Register panels
+    bpy.utils.register_class(GRAPH_PT_easing_presets_main)
+    bpy.utils.register_class(GRAPH_PT_easing_simple)
+    bpy.utils.register_class(GRAPH_PT_easing_advanced)
+    
+    bpy.utils.register_class(DOPESHEET_PT_easing_presets_main)
+    bpy.utils.register_class(DOPESHEET_PT_easing_simple)
+    bpy.utils.register_class(DOPESHEET_PT_easing_advanced)
 
 def unregister():
     bpy.utils.unregister_class(GRAPH_OT_apply_easing_base)
@@ -831,8 +868,14 @@ def unregister():
     bpy.utils.unregister_class(GRAPH_OT_apply_overshoot_x3_easing)
     bpy.utils.unregister_class(GRAPH_OT_apply_spring_back_easing)
     bpy.utils.unregister_class(GRAPH_OT_apply_bouncy_easing)
-    bpy.utils.unregister_class(GRAPH_PT_easing_presets)
-    bpy.utils.unregister_class(DOPESHEET_PT_easing_presets)
+    # Unregister panels
+    bpy.utils.unregister_class(GRAPH_PT_easing_presets_main)
+    bpy.utils.unregister_class(GRAPH_PT_easing_simple)
+    bpy.utils.unregister_class(GRAPH_PT_easing_advanced)
+    
+    bpy.utils.unregister_class(DOPESHEET_PT_easing_presets_main)
+    bpy.utils.unregister_class(DOPESHEET_PT_easing_simple)
+    bpy.utils.unregister_class(DOPESHEET_PT_easing_advanced)
 
 if __name__ == "__main__":
     register()
