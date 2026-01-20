@@ -1,7 +1,7 @@
 bl_info = {
     "name": "EaseIt",
     "author": "Andy Cuccaro",
-    "version": (0, 1, 0),
+    "version": (1, 0, 0),
     "blender": (2, 83, 0),
     "location": "Graph Editor > Sidebar > Easing",
     "description": "Apply easing presets to selected keyframes",
