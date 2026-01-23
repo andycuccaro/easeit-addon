@@ -13,8 +13,56 @@ import bmesh
 from mathutils import Vector
 import os
 import bpy.utils.previews
+from bpy_extras import anim_utils
 
 preview_collections = {}
+
+def get_blender_version():
+    """Returns Blender version as a tuple (major, minor, patch)"""
+    return bpy.app.version
+
+def is_blender_5_or_newer():
+    """Check if running Blender 5.0 or newer"""
+    return get_blender_version() >= (5, 0, 0)
+
+def get_fcurves_from_animation_data(anim_data):
+    """
+    Get fcurves from animation data, compatible with both old and new API.
+    """
+    if not anim_data or not anim_data.action:
+        return []
+    
+    action = anim_data.action
+    fcurves = []
+    
+    if is_blender_5_or_newer():
+        # Blender 5.0+: Must use channelbag API
+        # Get the active slot
+        action_slot = anim_data.action_slot
+        if not action_slot:
+            return []
+        
+        # Use the helper function from bpy_extras.anim_utils
+        channelbag = anim_utils.action_get_channelbag_for_slot(action, action_slot)
+        if channelbag:
+            fcurves.extend(channelbag.fcurves)
+    else:
+        # Blender 4.4 and older: use legacy API
+        if hasattr(action, 'fcurves'):
+            fcurves.extend(action.fcurves)
+    
+    return fcurves
+
+# Helper – returns True if the Graph Editor has any selectable animation data
+def graph_has_anim_data(context):
+    # The built‑in poll logic is roughly:
+    #   - area.type == 'GRAPH_EDITOR'
+    #   - space_data has a valid fcurve or keyframe selected
+    # We can reuse the same test that the operator uses:
+    return context.area.type == 'GRAPH_EDITOR' and (
+        getattr(context, "selected_visible_fcurves", None) or
+        getattr(context, "active_editable_fcurve", None)
+    )
 
 def load_icons():
     pcoll = bpy.utils.previews.new()
@@ -196,7 +244,24 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
     preset_name = "Default"
 
     def execute(self, context):
-        # Get all visible and editable fcurves
+        """
+        Main execution routine for the easing operator.
+        """
+
+        # Abort if the Graph Editor has no selected keyframes/f‑curves
+        # The Graph Editor exposes these attributes only when something is
+        # selected there. If both are empty we treat the situation as “nothing
+        # selected” and return a warning.
+        has_graph_selection = (
+            getattr(context, "selected_visible_fcurves", None) or
+            getattr(context, "active_editable_fcurve", None)
+        )
+        if not has_graph_selection:
+            self.report({'WARNING'}, "Select at least 2 keyframes in the Graph Editor")
+            return {'CANCELLED'}
+
+        # Continue with the existing logic (still able to pull f‑curves
+        # from the Dope Sheet for the selected keyframes)
         fcurves = []
 
         # Try to get fcurves from Graph Editor context first
@@ -208,13 +273,13 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
             # Fallback for Dope Sheet and other editors
             if context.selected_objects:
                 for obj in context.selected_objects:
-                    if obj.animation_data and obj.animation_data.action:
-                        fcurves.extend(obj.animation_data.action.fcurves)
-            if context.scene.animation_data and context.scene.animation_data.action:
-                fcurves.extend(context.scene.animation_data.action.fcurves)
-        
+                    fcurves.extend(get_fcurves_from_animation_data(obj.animation_data))
+
+            # Also try to get from scene animation data
+            fcurves.extend(get_fcurves_from_animation_data(context.scene.animation_data))
+
         if not fcurves:
-            self.report({'ERROR'}, "No F-Curves found")
+            self.report({'ERROR'}, "No F‑Curves found")
             return {'CANCELLED'}
         
         processed_curves = 0
@@ -233,7 +298,11 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
                 continue
             
             # Step 0: Use operator to properly set all selected keyframes' handles to FREE
-            bpy.ops.graph.handle_type(type='FREE')
+            if graph_has_anim_data(context):
+                bpy.ops.graph.handle_type(type='FREE')
+            else:
+                # No graph data – skip the operator; we’ll set handles manually later
+                pass
             
             # Sort keyframes by frame position
             selected_keyframes.sort(key=lambda x: x[1].co.x)
@@ -328,8 +397,25 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
     spatial_data = []
     preset_name = "Advanced Default"
 
-    def execute(self, context):        
-        # Get all visible and editable fcurves
+    def execute(self, context):
+        """
+        Main execution routine for the easing operator.
+        """
+
+        # Abort if the Graph Editor has no selected keyframes/f‑curves
+        # The Graph Editor exposes these attributes only when something is
+        # selected there. If both are empty we treat the situation as “nothing
+        # selected” and return a warning.
+        has_graph_selection = (
+            getattr(context, "selected_visible_fcurves", None) or
+            getattr(context, "active_editable_fcurve", None)
+        )
+        if not has_graph_selection:
+            self.report({'WARNING'}, "Select at least 2 keyframes in the Graph Editor")
+            return {'CANCELLED'}
+
+        # Continue with the existing logic (still able to pull f‑curves
+        # from the Dope Sheet for the selected keyframes)
         fcurves = []
 
         # Try to get fcurves from Graph Editor context first
@@ -339,21 +425,15 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
             fcurves = [context.active_editable_fcurve]
         else:
             # Fallback for Dope Sheet and other editors
-            # Get fcurves from selected objects' animation data
             if context.selected_objects:
                 for obj in context.selected_objects:
-                    if obj.animation_data and obj.animation_data.action:
-                        fcurves.extend(obj.animation_data.action.fcurves)
+                    fcurves.extend(get_fcurves_from_animation_data(obj.animation_data))
+
             # Also try to get from scene animation data
-            if context.scene.animation_data and context.scene.animation_data.action:
-                fcurves.extend(context.scene.animation_data.action.fcurves)
-        
+            fcurves.extend(get_fcurves_from_animation_data(context.scene.animation_data))
+
         if not fcurves:
-            self.report({'ERROR'}, "No F-Curves found")
-            return {'CANCELLED'}
-        
-        if not self.spatial_data:
-            self.report({'ERROR'}, "No spatial data defined for this preset")
+            self.report({'ERROR'}, "No F‑Curves found")
             return {'CANCELLED'}
         
         processed_curves = 0
@@ -372,8 +452,12 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
                 continue
             
             # Step 0: Use operator to properly set all selected keyframes' handles to FREE
-            bpy.ops.graph.handle_type(type='FREE')
-            
+            if graph_has_anim_data(context):
+                bpy.ops.graph.handle_type(type='FREE')
+            else:
+                # No graph data – skip the operator; we’ll set handles manually later
+                pass
+
             # Sort keyframes by frame position
             selected_keyframes.sort(key=lambda x: x[1].co.x)
             
@@ -999,11 +1083,9 @@ def register():
     bpy.utils.register_class(GRAPH_OT_apply_overshoot_x3_easing)
     bpy.utils.register_class(GRAPH_OT_apply_spring_back_easing)
     bpy.utils.register_class(GRAPH_OT_apply_bouncy_easing)
-    # Register panels
     bpy.utils.register_class(GRAPH_PT_easing_presets_main)
     bpy.utils.register_class(GRAPH_PT_easing_simple)
     bpy.utils.register_class(GRAPH_PT_easing_advanced)
-    
     bpy.utils.register_class(DOPESHEET_PT_easing_presets_main)
     bpy.utils.register_class(DOPESHEET_PT_easing_simple)
     bpy.utils.register_class(DOPESHEET_PT_easing_advanced)
@@ -1041,11 +1123,9 @@ def unregister():
     bpy.utils.unregister_class(GRAPH_OT_apply_overshoot_x3_easing)
     bpy.utils.unregister_class(GRAPH_OT_apply_spring_back_easing)
     bpy.utils.unregister_class(GRAPH_OT_apply_bouncy_easing)
-    # Unregister panels
     bpy.utils.unregister_class(GRAPH_PT_easing_presets_main)
     bpy.utils.unregister_class(GRAPH_PT_easing_simple)
     bpy.utils.unregister_class(GRAPH_PT_easing_advanced)
-    
     bpy.utils.unregister_class(DOPESHEET_PT_easing_presets_main)
     bpy.utils.unregister_class(DOPESHEET_PT_easing_simple)
     bpy.utils.unregister_class(DOPESHEET_PT_easing_advanced)
