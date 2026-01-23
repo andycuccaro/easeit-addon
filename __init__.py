@@ -1,7 +1,7 @@
 bl_info = {
     "name": "EaseIt",
     "author": "Andy Cuccaro",
-    "version": (0, 9, 0),
+    "version": (1, 0, 0),
     "blender": (2, 80, 0),
     "location": "Graph Editor > Sidebar > Easing",
     "description": "Apply easing presets to selected keyframes",
@@ -11,6 +11,177 @@ bl_info = {
 import bpy
 import bmesh
 from mathutils import Vector
+import os
+import bpy.utils.previews
+
+preview_collections = {}
+
+def load_icons():
+    pcoll = bpy.utils.previews.new()
+
+    # Path to THIS file ( __init__.py )
+    addon_dir = os.path.dirname(__file__)
+
+    # Path to icons folder (relative)
+    icons_dir = os.path.join(addon_dir, "icons")
+
+    pcoll.load(
+        "DEFAULT",
+        os.path.join(icons_dir, "01_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "JUST_FINE",
+        os.path.join(icons_dir, "02_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "CUBIC",
+        os.path.join(icons_dir, "03_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "EXPONENTIAL",
+        os.path.join(icons_dir, "04_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "EXTREME",
+        os.path.join(icons_dir, "05_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "LINEAR",
+        os.path.join(icons_dir, "06_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "MAX",
+        os.path.join(icons_dir, "07_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "SMOOTH",
+        os.path.join(icons_dir, "08_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "EASY",
+        os.path.join(icons_dir, "09_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "SUPER_SMOOTH",
+        os.path.join(icons_dir, "10_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "SMOOTH_OUT",
+        os.path.join(icons_dir, "11_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "EASY_OUT",
+        os.path.join(icons_dir, "12_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "SUPER_SMOOTH_OUT",
+        os.path.join(icons_dir, "13_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "EASY_IN",
+        os.path.join(icons_dir, "14_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "EASE_OUT",
+        os.path.join(icons_dir, "15_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "EXPLOSIVE",
+        os.path.join(icons_dir, "16_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "SPRINGY",
+        os.path.join(icons_dir, "17_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "OVERSHOOT_01",
+        os.path.join(icons_dir, "18_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "OVERSHOOT_02",
+        os.path.join(icons_dir, "19_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "ANTICIPATION_01",
+        os.path.join(icons_dir, "20_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "ANTICIPATION_02",
+        os.path.join(icons_dir, "21_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "ANTICIPATION_03",
+        os.path.join(icons_dir, "22_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "EASY_GOING",
+        os.path.join(icons_dir, "23_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "ANTICIPATION_OVERSHOOT",
+        os.path.join(icons_dir, "24_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "AGITATED",
+        os.path.join(icons_dir, "25_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "VERY_LATE_STOP",
+        os.path.join(icons_dir, "26_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "OVERSHOOT_X3",
+        os.path.join(icons_dir, "27_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "SPRING_BACK",
+        os.path.join(icons_dir, "28_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "BOUNCY",
+        os.path.join(icons_dir, "29_icon.png"),
+        'IMAGE'
+    )
+    pcoll.load(
+        "WEIRD",
+        os.path.join(icons_dir, "30_icon.png"),
+        'IMAGE'
+    )
+
+    preview_collections["main"] = pcoll
+    
+def unload_icons():
+    for pcoll in preview_collections.values():
+        bpy.utils.previews.remove(pcoll)
+    preview_collections.clear()
 
 # Base class for all easing presets
 class GRAPH_OT_apply_easing_base(bpy.types.Operator):
@@ -35,12 +206,10 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
             fcurves = [context.active_editable_fcurve]
         else:
             # Fallback for Dope Sheet and other editors
-            # Get fcurves from selected objects' animation data
             if context.selected_objects:
                 for obj in context.selected_objects:
                     if obj.animation_data and obj.animation_data.action:
                         fcurves.extend(obj.animation_data.action.fcurves)
-            # Also try to get from scene animation data
             if context.scene.animation_data and context.scene.animation_data.action:
                 fcurves.extend(context.scene.animation_data.action.fcurves)
         
@@ -63,8 +232,31 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
             if len(selected_keyframes) < 2:
                 continue
             
+            # Step 0: Use operator to properly set all selected keyframes' handles to FREE
+            bpy.ops.graph.handle_type(type='FREE')
+            
             # Sort keyframes by frame position
             selected_keyframes.sort(key=lambda x: x[1].co.x)
+            
+            # Store original interpolation types and handle types for all selected keyframes
+            original_data = {}
+            for idx, kf in selected_keyframes:
+                original_data[idx] = {
+                    'interpolation': kf.interpolation,
+                    'handle_left_type': kf.handle_left_type,
+                    'handle_right_type': kf.handle_right_type,
+                    'handle_left_pos': kf.handle_left.copy(),
+                    'handle_right_pos': kf.handle_right.copy()
+                }
+            
+            # Step 1: Set all handles to FREE
+            for idx, kf in selected_keyframes:
+                kf.handle_left_type = 'FREE'
+                kf.handle_right_type = 'FREE'
+            
+            # Step 2: Convert all selected keyframes to BEZIER
+            for idx, kf in selected_keyframes:
+                kf.interpolation = 'BEZIER'
             
             # Apply easing between each consecutive pair of selected keyframes
             for i in range(len(selected_keyframes) - 1):
@@ -82,35 +274,31 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
                 handle_extension_in = frame_distance * self.ease_in_ratio
                 handle_extension_out = frame_distance * self.ease_out_ratio
                 
-                # Store original handle types and positions to preserve unaffected handles
-                kf1_left_handle_type = kf1.handle_left_type
-                kf1_left_handle_pos = kf1.handle_left.copy()
-                kf2_right_handle_type = kf2.handle_right_type
-                kf2_right_handle_pos = kf2.handle_right.copy()
+                # Identify outer handles that should be preserved
+                is_first_keyframe = (i == 0)
+                is_last_keyframe = (i == len(selected_keyframes) - 2)
                 
-                # Apply to first keyframe (ease out)
-                # Only modify the right handle, preserve left handle unless it's the first keyframe
-                if i == 0 or kf1.handle_right_type != 'ALIGNED':
-                    kf1.handle_right_type = 'ALIGNED'
+                # Step 3: Apply easing - set inner handles to ALIGNED
+                # Apply to first keyframe (ease out) - always set right handle
+                kf1.handle_right_type = 'ALIGNED'
                 kf1.handle_right = (kf1.co.x + handle_extension_out, kf1.co.y)
                 
-                # For first keyframe in sequence, preserve left handle
-                if i == 0:
-                    kf1.handle_left_type = kf1_left_handle_type
-                    if kf1_left_handle_type in ['FREE', 'ALIGNED']:
-                        kf1.handle_left = kf1_left_handle_pos
-                
-                # Apply to second keyframe (ease in)  
-                # Only modify the left handle, preserve right handle unless it's the last keyframe
-                if i == len(selected_keyframes) - 2 or kf2.handle_left_type != 'ALIGNED':
-                    kf2.handle_left_type = 'ALIGNED'
+                # Apply to second keyframe (ease in) - always set left handle
+                kf2.handle_left_type = 'ALIGNED'
                 kf2.handle_left = (kf2.co.x - handle_extension_in, kf2.co.y)
                 
-                # For last keyframe in sequence, preserve right handle
-                if i == len(selected_keyframes) - 2:
-                    kf2.handle_right_type = kf2_right_handle_type
-                    if kf2_right_handle_type in ['FREE', 'ALIGNED']:
-                        kf2.handle_right = kf2_right_handle_pos
+                # Step 4: Restore outer handle types to original
+                if is_first_keyframe:
+                    kf1.handle_left_type = original_data[kf1_idx]['handle_left_type']
+                    kf1.handle_left = original_data[kf1_idx]['handle_left_pos']
+                
+                if is_last_keyframe:
+                    kf2.handle_right_type = original_data[kf2_idx]['handle_right_type']
+                    kf2.handle_right = original_data[kf2_idx]['handle_right_pos']
+            
+            # Step 5: Restore interpolation type of the last selected keyframe
+            last_kf_idx, last_kf = selected_keyframes[-1]
+            last_kf.interpolation = original_data[last_kf_idx]['interpolation']
             
             # Update the fcurve
             fcurve.update()
@@ -183,8 +371,15 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
             if len(selected_keyframes) < 2:
                 continue
             
+            # Step 0: Use operator to properly set all selected keyframes' handles to FREE
+            bpy.ops.graph.handle_type(type='FREE')
+            
             # Sort keyframes by frame position
             selected_keyframes.sort(key=lambda x: x[1].co.x)
+            
+            # Store the interpolation type of the last selected keyframe
+            # This will be restored to preserve animation after the selection
+            last_kf_original_interpolation = selected_keyframes[-1][1].interpolation
             
             # Get the first and last selected keyframes
             first_kf = selected_keyframes[0][1]
@@ -315,6 +510,9 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
             if created_keyframes:
                 created_keyframes[0].select_control_point = True
                 created_keyframes[-1].select_control_point = True
+                
+            # Restore the interpolation type of the last keyframe to preserve animation after it
+            created_keyframes[-1].interpolation = last_kf_original_interpolation
             
             # Update the fcurve
             fcurve.update()
@@ -636,106 +834,139 @@ class GRAPH_OT_apply_bouncy_easing(GRAPH_OT_apply_advanced_easing_base):
         [1, 1, 1.024, 23.549, 0, 86.165, True, True, True]
     ]
 
-class EASING_PT_presets_base:
+class EASING_PT_presets_main:
     """Base class for easing presets panel"""
     bl_label = "Easing Presets"
     bl_region_type = 'UI'
-    bl_category = "Easit"
+    bl_category = "Easeit"
+    bl_description = "Select 2+ keyframes per curve"
+    
+    def draw(self, context):
+        layout = self.layout
+    
+# Simple Easing subpanel
+class EASING_PT_simple_base:
+    """Simple easing presets subpanel"""
+    bl_label = "Simple Easing"
+    bl_region_type = 'UI'
+    bl_category = "Easeit"
 
     def draw(self, context):
         layout = self.layout
-        
-        # Add some instructions
-        layout.label(text="Select 2+ keyframes per curve")
-        layout.separator()
+        pcoll = preview_collections["main"]
         
         # Symmetric easing presets
         layout.label(text="Symmetric Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_default_easing", text="Default") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_just_fine_easing", text="Just Fine") #, icon='IPO_SINE')
+        row.operator("graph.apply_default_easing", text="Default", icon_value=pcoll["DEFAULT"].icon_id)
+        row.operator("graph.apply_just_fine_easing", text="Just Fine", icon_value=pcoll["JUST_FINE"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_cubic_easing", text="Cubic") #, icon='IPO_CUBIC')
-        row.operator("graph.apply_exponential_easing", text="Exponential") #, icon='IPO_EXPO')
+        row.operator("graph.apply_cubic_easing", text="Cubic", icon_value=pcoll["CUBIC"].icon_id)
+        row.operator("graph.apply_exponential_easing", text="Exponential", icon_value=pcoll["EXPONENTIAL"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_extreme_easing", text="Extreme") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_linear_easing", text="Linear") #, icon='IPO_LINEAR')
+        row.operator("graph.apply_extreme_easing", text="Extreme", icon_value=pcoll["EXTREME"].icon_id)
+        row.operator("graph.apply_linear_easing", text="Linear", icon_value=pcoll["LINEAR"].icon_id)
         
-        layout.operator("graph.apply_max_easing", text="Max") #, icon='IPO_EASE_IN_OUT')
-        
-        layout.separator()
+        layout.operator("graph.apply_max_easing", text="Max", icon_value=pcoll["MAX"].icon_id)
         
         # Asymmetric easing presets
         layout.label(text="Asymmetric Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_smooth_easing", text="Smooth") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_easy_easing", text="Easy") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_smooth_easing", text="Smooth", icon_value=pcoll["SMOOTH"].icon_id)
+        row.operator("graph.apply_easy_easing", text="Easy", icon_value=pcoll["EASY"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_super_smooth_easing", text="Super Smooth") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_smooth_out_easing", text="Smooth Out") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_super_smooth_easing", text="Super Smooth", icon_value=pcoll["SUPER_SMOOTH"].icon_id)
+        row.operator("graph.apply_smooth_out_easing", text="Smooth Out", icon_value=pcoll["SMOOTH_OUT"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_easy_out_easing", text="Easy Out") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_super_smooth_out_easing", text="Super Smooth Out") #, icon='IPO_EASE_IN_OUT')
-        
-        layout.separator()
+        row.operator("graph.apply_easy_out_easing", text="Easy Out", icon_value=pcoll["EASY_OUT"].icon_id)
+        row.operator("graph.apply_super_smooth_out_easing", text="Super Smooth Out", icon_value=pcoll["SUPER_SMOOTH_OUT"].icon_id)
         
         # One-sided easing presets
         layout.label(text="One-Sided Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_ease_in_only_easing", text="Ease In Only") #, icon='IPO_EASE_OUT')
-        row.operator("graph.apply_ease_out_only_easing", text="Ease Out Only") #, icon='IPO_EASE_IN')
+        row.operator("graph.apply_ease_in_only_easing", text="Ease In Only", icon_value=pcoll["EASY_IN"].icon_id)
+        row.operator("graph.apply_ease_out_only_easing", text="Ease Out Only", icon_value=pcoll["EASE_OUT"].icon_id)
         
-        layout.separator()
+# Advanced Easing subpanel
+class EASING_PT_advanced_base:
+    """Advanced easing presets subpanel"""
+    bl_label = "Advanced Easing"
+    bl_region_type = 'UI'
+    bl_category = "Easeit"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        pcoll = preview_collections["main"]
         
         # Advanced/Special easing presets
-        layout.label(text="Advanced Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_explosive_easing", text="Explosive") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_springy_easing", text="Springy") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_explosive_easing", text="Explosive", icon_value=pcoll["EXPLOSIVE"].icon_id)
+        row.operator("graph.apply_springy_easing", text="Springy", icon_value=pcoll["SPRINGY"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_overshoot1_easing", text="Overshoot 1") #, icon='IPO_BACK')
-        row.operator("graph.apply_overshoot2_easing", text="Overshoot 2") #, icon='IPO_BACK')
+        row.operator("graph.apply_overshoot1_easing", text="Overshoot 1", icon_value=pcoll["OVERSHOOT_01"].icon_id)
+        row.operator("graph.apply_overshoot2_easing", text="Overshoot 2", icon_value=pcoll["OVERSHOOT_02"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation1_easing", text="Anticipation 1") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_anticipation2_easing", text="Anticipation 2") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation1_easing", text="Anticipation 1", icon_value=pcoll["ANTICIPATION_01"].icon_id)
+        row.operator("graph.apply_anticipation2_easing", text="Anticipation 2", icon_value=pcoll["ANTICIPATION_02"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation3_easing", text="Anticipation 3") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_easy_going_easing", text="Easy Going") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation3_easing", text="Anticipation 3", icon_value=pcoll["ANTICIPATION_03"].icon_id)
+        row.operator("graph.apply_easy_going_easing", text="Easy Going", icon_value=pcoll["EASY_GOING"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation_overshoot_easing", text="Antic + Over") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_agitated_easing", text="Agitated") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_anticipation_overshoot_easing", text="Antic + Over", icon_value=pcoll["ANTICIPATION_OVERSHOOT"].icon_id)
+        row.operator("graph.apply_agitated_easing", text="Agitated", icon_value=pcoll["AGITATED"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_very_late_stop_easing", text="Very Late Stop") #, icon='IPO_EASE_IN_OUT')
-        row.operator("graph.apply_overshoot_x3_easing", text="Overshoot x3") #, icon='IPO_EASE_IN_OUT')
+        row.operator("graph.apply_very_late_stop_easing", text="Very Late Stop", icon_value=pcoll["VERY_LATE_STOP"].icon_id)
+        row.operator("graph.apply_overshoot_x3_easing", text="Overshoot x3", icon_value=pcoll["OVERSHOOT_X3"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_spring_back_easing", text="Spring Back") #, icon='IPO_ELASTIC')
-        row.operator("graph.apply_bouncy_easing", text="Bouncy") #, icon='IPO_BOUNCE')
+        row.operator("graph.apply_spring_back_easing", text="Spring Back", icon_value=pcoll["SPRING_BACK"].icon_id)
+        row.operator("graph.apply_bouncy_easing", text="Bouncy", icon_value=pcoll["BOUNCY"].icon_id)
         
-        layout.operator("graph.apply_weird_easing", text="Weird") #, icon='SHARPCURVE')
+        layout.operator("graph.apply_weird_easing", text="Weird", icon_value=pcoll["WEIRD"].icon_id)
 
 # Panel for Graph Editor
-class GRAPH_PT_easing_presets(EASING_PT_presets_base, bpy.types.Panel):
-    """Panel for easing presets in Graph Editor sidebar"""
-    bl_idname = "GRAPH_PT_easing_presets"
+    
+class GRAPH_PT_easing_presets_main(EASING_PT_presets_main, bpy.types.Panel):
+    bl_idname = "GRAPH_PT_easing_presets_main"
+    bl_space_type = 'GRAPH_EDITOR'
+
+class GRAPH_PT_easing_simple(EASING_PT_simple_base, bpy.types.Panel):
+    bl_idname = "GRAPH_PT_easing_simple"
+    bl_parent_id = "GRAPH_PT_easing_presets_main"
+    bl_space_type = 'GRAPH_EDITOR'
+
+class GRAPH_PT_easing_advanced(EASING_PT_advanced_base, bpy.types.Panel):
+    bl_idname = "GRAPH_PT_easing_advanced"
+    bl_parent_id = "GRAPH_PT_easing_presets_main"
     bl_space_type = 'GRAPH_EDITOR'
 
 # Panel for Dope Sheet
-class DOPESHEET_PT_easing_presets(EASING_PT_presets_base, bpy.types.Panel):
-    """Panel for easing presets in Dope Sheet sidebar"""
-    bl_idname = "DOPESHEET_PT_easing_presets"
+class DOPESHEET_PT_easing_presets_main(EASING_PT_presets_main, bpy.types.Panel):
+    bl_idname = "DOPESHEET_PT_easing_presets_main"
+    bl_space_type = 'DOPESHEET_EDITOR'
+
+class DOPESHEET_PT_easing_simple(EASING_PT_simple_base, bpy.types.Panel):
+    bl_idname = "DOPESHEET_PT_easing_simple"
+    bl_parent_id = "DOPESHEET_PT_easing_presets_main"
+    bl_space_type = 'DOPESHEET_EDITOR'
+
+class DOPESHEET_PT_easing_advanced(EASING_PT_advanced_base, bpy.types.Panel):
+    bl_idname = "DOPESHEET_PT_easing_advanced"
+    bl_parent_id = "DOPESHEET_PT_easing_presets_main"
     bl_space_type = 'DOPESHEET_EDITOR'
 
 def register():
+    load_icons()
     bpy.utils.register_class(GRAPH_OT_apply_easing_base)
     bpy.utils.register_class(GRAPH_OT_apply_advanced_easing_base)
     bpy.utils.register_class(GRAPH_OT_apply_default_easing)
@@ -768,8 +999,14 @@ def register():
     bpy.utils.register_class(GRAPH_OT_apply_overshoot_x3_easing)
     bpy.utils.register_class(GRAPH_OT_apply_spring_back_easing)
     bpy.utils.register_class(GRAPH_OT_apply_bouncy_easing)
-    bpy.utils.register_class(GRAPH_PT_easing_presets)
-    bpy.utils.register_class(DOPESHEET_PT_easing_presets)
+    # Register panels
+    bpy.utils.register_class(GRAPH_PT_easing_presets_main)
+    bpy.utils.register_class(GRAPH_PT_easing_simple)
+    bpy.utils.register_class(GRAPH_PT_easing_advanced)
+    
+    bpy.utils.register_class(DOPESHEET_PT_easing_presets_main)
+    bpy.utils.register_class(DOPESHEET_PT_easing_simple)
+    bpy.utils.register_class(DOPESHEET_PT_easing_advanced)
 
 def unregister():
     bpy.utils.unregister_class(GRAPH_OT_apply_easing_base)
@@ -804,8 +1041,15 @@ def unregister():
     bpy.utils.unregister_class(GRAPH_OT_apply_overshoot_x3_easing)
     bpy.utils.unregister_class(GRAPH_OT_apply_spring_back_easing)
     bpy.utils.unregister_class(GRAPH_OT_apply_bouncy_easing)
-    bpy.utils.unregister_class(GRAPH_PT_easing_presets)
-    bpy.utils.unregister_class(DOPESHEET_PT_easing_presets)
+    # Unregister panels
+    bpy.utils.unregister_class(GRAPH_PT_easing_presets_main)
+    bpy.utils.unregister_class(GRAPH_PT_easing_simple)
+    bpy.utils.unregister_class(GRAPH_PT_easing_advanced)
+    
+    bpy.utils.unregister_class(DOPESHEET_PT_easing_presets_main)
+    bpy.utils.unregister_class(DOPESHEET_PT_easing_simple)
+    bpy.utils.unregister_class(DOPESHEET_PT_easing_advanced)
+    unload_icons()
 
 if __name__ == "__main__":
     register()
