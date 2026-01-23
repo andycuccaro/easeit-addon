@@ -235,31 +235,8 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
             # Step 0: Use operator to properly set all selected keyframes' handles to FREE
             bpy.ops.graph.handle_type(type='FREE')
             
-            # Step 0: Use operator to properly set all selected keyframes' handles to FREE
-            bpy.ops.graph.handle_type(type='FREE')
-            
             # Sort keyframes by frame position
             selected_keyframes.sort(key=lambda x: x[1].co.x)
-            
-            # Store original interpolation types and handle types for all selected keyframes
-            original_data = {}
-            for idx, kf in selected_keyframes:
-                original_data[idx] = {
-                    'interpolation': kf.interpolation,
-                    'handle_left_type': kf.handle_left_type,
-                    'handle_right_type': kf.handle_right_type,
-                    'handle_left_pos': kf.handle_left.copy(),
-                    'handle_right_pos': kf.handle_right.copy()
-                }
-            
-            # Step 1: Set all handles to FREE
-            for idx, kf in selected_keyframes:
-                kf.handle_left_type = 'FREE'
-                kf.handle_right_type = 'FREE'
-            
-            # Step 2: Convert all selected keyframes to BEZIER
-            for idx, kf in selected_keyframes:
-                kf.interpolation = 'BEZIER'
             
             # Store original interpolation types and handle types for all selected keyframes
             original_data = {}
@@ -304,33 +281,12 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
                 # Step 3: Apply easing - set inner handles to ALIGNED
                 # Apply to first keyframe (ease out) - always set right handle
                 kf1.handle_right_type = 'ALIGNED'
-                # Identify outer handles that should be preserved
-                is_first_keyframe = (i == 0)
-                is_last_keyframe = (i == len(selected_keyframes) - 2)
-                
-                # Step 3: Apply easing - set inner handles to ALIGNED
-                # Apply to first keyframe (ease out) - always set right handle
-                kf1.handle_right_type = 'ALIGNED'
                 kf1.handle_right = (kf1.co.x + handle_extension_out, kf1.co.y)
                 
                 # Apply to second keyframe (ease in) - always set left handle
                 kf2.handle_left_type = 'ALIGNED'
-                # Apply to second keyframe (ease in) - always set left handle
-                kf2.handle_left_type = 'ALIGNED'
                 kf2.handle_left = (kf2.co.x - handle_extension_in, kf2.co.y)
                 
-                # Step 4: Restore outer handle types to original
-                if is_first_keyframe:
-                    kf1.handle_left_type = original_data[kf1_idx]['handle_left_type']
-                    kf1.handle_left = original_data[kf1_idx]['handle_left_pos']
-                
-                if is_last_keyframe:
-                    kf2.handle_right_type = original_data[kf2_idx]['handle_right_type']
-                    kf2.handle_right = original_data[kf2_idx]['handle_right_pos']
-            
-            # Step 5: Restore interpolation type of the last selected keyframe
-            last_kf_idx, last_kf = selected_keyframes[-1]
-            last_kf.interpolation = original_data[last_kf_idx]['interpolation']
                 # Step 4: Restore outer handle types to original
                 if is_first_keyframe:
                     kf1.handle_left_type = original_data[kf1_idx]['handle_left_type']
@@ -418,15 +374,8 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
             # Step 0: Use operator to properly set all selected keyframes' handles to FREE
             bpy.ops.graph.handle_type(type='FREE')
             
-            # Step 0: Use operator to properly set all selected keyframes' handles to FREE
-            bpy.ops.graph.handle_type(type='FREE')
-            
             # Sort keyframes by frame position
             selected_keyframes.sort(key=lambda x: x[1].co.x)
-            
-            # Store the interpolation type of the last selected keyframe
-            # This will be restored to preserve animation after the selection
-            last_kf_original_interpolation = selected_keyframes[-1][1].interpolation
             
             # Store the interpolation type of the last selected keyframe
             # This will be restored to preserve animation after the selection
@@ -561,9 +510,6 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
             if created_keyframes:
                 created_keyframes[0].select_control_point = True
                 created_keyframes[-1].select_control_point = True
-                
-            # Restore the interpolation type of the last keyframe to preserve animation after it
-            created_keyframes[-1].interpolation = last_kf_original_interpolation
                 
             # Restore the interpolation type of the last keyframe to preserve animation after it
             created_keyframes[-1].interpolation = last_kf_original_interpolation
@@ -889,13 +835,9 @@ class GRAPH_OT_apply_bouncy_easing(GRAPH_OT_apply_advanced_easing_base):
     ]
 
 class EASING_PT_presets_main:
-class EASING_PT_presets_main:
     """Base class for easing presets panel"""
     bl_label = "Easing Presets"
     bl_region_type = 'UI'
-    bl_category = "Easeit"
-    bl_description = "Select 2+ keyframes per curve"
-    
     bl_category = "Easeit"
     bl_description = "Select 2+ keyframes per curve"
     
@@ -1006,34 +948,9 @@ class GRAPH_PT_easing_simple(EASING_PT_simple_base, bpy.types.Panel):
 class GRAPH_PT_easing_advanced(EASING_PT_advanced_base, bpy.types.Panel):
     bl_idname = "GRAPH_PT_easing_advanced"
     bl_parent_id = "GRAPH_PT_easing_presets_main"
-    
-class GRAPH_PT_easing_presets_main(EASING_PT_presets_main, bpy.types.Panel):
-    bl_idname = "GRAPH_PT_easing_presets_main"
-    bl_space_type = 'GRAPH_EDITOR'
-
-class GRAPH_PT_easing_simple(EASING_PT_simple_base, bpy.types.Panel):
-    bl_idname = "GRAPH_PT_easing_simple"
-    bl_parent_id = "GRAPH_PT_easing_presets_main"
-    bl_space_type = 'GRAPH_EDITOR'
-
-class GRAPH_PT_easing_advanced(EASING_PT_advanced_base, bpy.types.Panel):
-    bl_idname = "GRAPH_PT_easing_advanced"
-    bl_parent_id = "GRAPH_PT_easing_presets_main"
     bl_space_type = 'GRAPH_EDITOR'
 
 # Panel for Dope Sheet
-class DOPESHEET_PT_easing_presets_main(EASING_PT_presets_main, bpy.types.Panel):
-    bl_idname = "DOPESHEET_PT_easing_presets_main"
-    bl_space_type = 'DOPESHEET_EDITOR'
-
-class DOPESHEET_PT_easing_simple(EASING_PT_simple_base, bpy.types.Panel):
-    bl_idname = "DOPESHEET_PT_easing_simple"
-    bl_parent_id = "DOPESHEET_PT_easing_presets_main"
-    bl_space_type = 'DOPESHEET_EDITOR'
-
-class DOPESHEET_PT_easing_advanced(EASING_PT_advanced_base, bpy.types.Panel):
-    bl_idname = "DOPESHEET_PT_easing_advanced"
-    bl_parent_id = "DOPESHEET_PT_easing_presets_main"
 class DOPESHEET_PT_easing_presets_main(EASING_PT_presets_main, bpy.types.Panel):
     bl_idname = "DOPESHEET_PT_easing_presets_main"
     bl_space_type = 'DOPESHEET_EDITOR'
@@ -1082,14 +999,6 @@ def register():
     bpy.utils.register_class(GRAPH_OT_apply_overshoot_x3_easing)
     bpy.utils.register_class(GRAPH_OT_apply_spring_back_easing)
     bpy.utils.register_class(GRAPH_OT_apply_bouncy_easing)
-    # Register panels
-    bpy.utils.register_class(GRAPH_PT_easing_presets_main)
-    bpy.utils.register_class(GRAPH_PT_easing_simple)
-    bpy.utils.register_class(GRAPH_PT_easing_advanced)
-    
-    bpy.utils.register_class(DOPESHEET_PT_easing_presets_main)
-    bpy.utils.register_class(DOPESHEET_PT_easing_simple)
-    bpy.utils.register_class(DOPESHEET_PT_easing_advanced)
     # Register panels
     bpy.utils.register_class(GRAPH_PT_easing_presets_main)
     bpy.utils.register_class(GRAPH_PT_easing_simple)
