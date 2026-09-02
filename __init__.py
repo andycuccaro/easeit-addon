@@ -1,7 +1,7 @@
 bl_info = {
     "name": "EaseIt",
     "author": "Andy Cuccaro",
-    "version": (2, 0, 0),
+    "version": (2, 0, 1),
     "blender": (2, 80, 0),
     "location": "Graph Editor > Sidebar > Easing",
     "description": "Apply easing presets to selected keyframes",
@@ -584,13 +584,6 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
             if len(selected_keyframes) < 2:
                 continue
             
-            # Step 0: Use operator to properly set all selected keyframes' handles to FREE
-            if graph_has_anim_data(context):
-                bpy.ops.graph.handle_type(type='FREE')
-            else:
-                # No graph data – skip the operator; we’ll set handles manually later
-                pass
-            
             # Sort keyframes by frame position
             selected_keyframes.sort(key=lambda x: x[1].co.x)
             
@@ -737,13 +730,6 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
             # Skip curves that don't have at least 2 selected keyframes
             if len(selected_keyframes) < 2:
                 continue
-            
-            # Step 0: Use operator to properly set all selected keyframes' handles to FREE
-            if graph_has_anim_data(context):
-                bpy.ops.graph.handle_type(type='FREE')
-            else:
-                # No graph data – skip the operator; we’ll set handles manually later
-                pass
 
             # Sort keyframes by frame position
             selected_keyframes.sort(key=lambda x: x[1].co.x)
