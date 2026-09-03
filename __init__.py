@@ -1,7 +1,7 @@
 bl_info = {
     "name": "EaseIt",
     "author": "Andy Cuccaro",
-    "version": (2, 0, 1),
+    "version": (2, 0, 2),
     "blender": (2, 80, 0),
     "location": "Graph Editor > Sidebar > Easing",
     "description": "Apply easing presets to selected keyframes",
@@ -1608,38 +1608,38 @@ class EASING_PT_simple_base:
         # Symmetric easing presets
         layout.label(text="Symmetric Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_default_easing", text="Default", icon_value=pcoll["DEFAULT"].icon_id)
-        row.operator("graph.apply_just_fine_easing", text="Just Fine", icon_value=pcoll["JUST_FINE"].icon_id)
+        row.operator("graph.apply_default_easing", text="33", icon_value=pcoll["DEFAULT"].icon_id)
+        row.operator("graph.apply_just_fine_easing", text="45", icon_value=pcoll["JUST_FINE"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_cubic_easing", text="Cubic", icon_value=pcoll["CUBIC"].icon_id)
-        row.operator("graph.apply_exponential_easing", text="Exponential", icon_value=pcoll["EXPONENTIAL"].icon_id)
+        row.operator("graph.apply_cubic_easing", text="65", icon_value=pcoll["CUBIC"].icon_id)
+        row.operator("graph.apply_exponential_easing", text="87", icon_value=pcoll["EXPONENTIAL"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_extreme_easing", text="Extreme", icon_value=pcoll["EXTREME"].icon_id)
-        row.operator("graph.apply_linear_easing", text="Linear", icon_value=pcoll["LINEAR"].icon_id)
+        row.operator("graph.apply_extreme_easing", text="95", icon_value=pcoll["EXTREME"].icon_id)
+        row.operator("graph.apply_linear_easing", text="0", icon_value=pcoll["LINEAR"].icon_id)
         
-        layout.operator("graph.apply_max_easing", text="Max", icon_value=pcoll["MAX"].icon_id)
+        layout.operator("graph.apply_max_easing", text="100", icon_value=pcoll["MAX"].icon_id)
         
         # Asymmetric easing presets
         layout.label(text="Asymmetric Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_smooth_easing", text="Smooth", icon_value=pcoll["SMOOTH"].icon_id)
-        row.operator("graph.apply_easy_easing", text="Easy", icon_value=pcoll["EASY"].icon_id)
+        row.operator("graph.apply_smooth_easing", text="40 60", icon_value=pcoll["SMOOTH"].icon_id)
+        row.operator("graph.apply_easy_easing", text="30 90", icon_value=pcoll["EASY"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_super_smooth_easing", text="Super Smooth", icon_value=pcoll["SUPER_SMOOTH"].icon_id)
-        row.operator("graph.apply_smooth_out_easing", text="Smooth Out", icon_value=pcoll["SMOOTH_OUT"].icon_id)
+        row.operator("graph.apply_super_smooth_easing", text="50 95", icon_value=pcoll["SUPER_SMOOTH"].icon_id)
+        row.operator("graph.apply_smooth_out_easing", text="60 40", icon_value=pcoll["SMOOTH_OUT"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_easy_out_easing", text="Easy Out", icon_value=pcoll["EASY_OUT"].icon_id)
-        row.operator("graph.apply_super_smooth_out_easing", text="Super Smooth Out", icon_value=pcoll["SUPER_SMOOTH_OUT"].icon_id)
+        row.operator("graph.apply_easy_out_easing", text="90 30", icon_value=pcoll["EASY_OUT"].icon_id)
+        row.operator("graph.apply_super_smooth_out_easing", text="95 50", icon_value=pcoll["SUPER_SMOOTH_OUT"].icon_id)
         
         # One-sided easing presets
         layout.label(text="One-Sided Easing:")
         row = layout.row(align=True)
-        row.operator("graph.apply_ease_in_only_easing", text="Ease In Only", icon_value=pcoll["EASY_IN"].icon_id)
-        row.operator("graph.apply_ease_out_only_easing", text="Ease Out Only", icon_value=pcoll["EASE_OUT"].icon_id)
+        row.operator("graph.apply_ease_in_only_easing", text="0 90", icon_value=pcoll["EASY_IN"].icon_id)
+        row.operator("graph.apply_ease_out_only_easing", text="90 0", icon_value=pcoll["EASE_OUT"].icon_id)
 
         # Custom presets
         layout.separator()
@@ -1674,11 +1674,11 @@ class EASING_PT_advanced_base:
         # Advanced/Special easing presets
         row = layout.row(align=True)
         row.operator("graph.apply_explosive_easing", text="Explosive", icon_value=pcoll["EXPLOSIVE"].icon_id)
-        row.operator("graph.apply_springy_easing", text="Springy", icon_value=pcoll["SPRINGY"].icon_id)
+        row.operator("graph.apply_overshoot1_easing", text="Overshoot 1", icon_value=pcoll["OVERSHOOT_01"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_overshoot1_easing", text="Overshoot 1", icon_value=pcoll["OVERSHOOT_01"].icon_id)
         row.operator("graph.apply_overshoot2_easing", text="Overshoot 2", icon_value=pcoll["OVERSHOOT_02"].icon_id)
+        row.operator("graph.apply_easy_going_easing", text="Easy Going", icon_value=pcoll["EASY_GOING"].icon_id)
         
         row = layout.row(align=True)
         row.operator("graph.apply_anticipation1_easing", text="Anticipation 1", icon_value=pcoll["ANTICIPATION_01"].icon_id)
@@ -1686,21 +1686,21 @@ class EASING_PT_advanced_base:
         
         row = layout.row(align=True)
         row.operator("graph.apply_anticipation3_easing", text="Anticipation 3", icon_value=pcoll["ANTICIPATION_03"].icon_id)
-        row.operator("graph.apply_easy_going_easing", text="Easy Going", icon_value=pcoll["EASY_GOING"].icon_id)
+        row.operator("graph.apply_anticipation_overshoot_easing", text="Antic + Over", icon_value=pcoll["ANTICIPATION_OVERSHOOT"].icon_id)
         
         row = layout.row(align=True)
-        row.operator("graph.apply_anticipation_overshoot_easing", text="Antic + Over", icon_value=pcoll["ANTICIPATION_OVERSHOOT"].icon_id)
         row.operator("graph.apply_agitated_easing", text="Agitated", icon_value=pcoll["AGITATED"].icon_id)
+        row.operator("graph.apply_springy_easing", text="Springy", icon_value=pcoll["SPRINGY"].icon_id)
         
         row = layout.row(align=True)
         row.operator("graph.apply_very_late_stop_easing", text="Very Late Stop", icon_value=pcoll["VERY_LATE_STOP"].icon_id)
-        row.operator("graph.apply_overshoot_x3_easing", text="Overshoot x3", icon_value=pcoll["OVERSHOOT_X3"].icon_id)
+        row.operator("graph.apply_weird_easing", text="Weird", icon_value=pcoll["WEIRD"].icon_id)
         
         row = layout.row(align=True)
+        row.operator("graph.apply_overshoot_x3_easing", text="Overshoot x3", icon_value=pcoll["OVERSHOOT_X3"].icon_id)
         row.operator("graph.apply_spring_back_easing", text="Spring Back", icon_value=pcoll["SPRING_BACK"].icon_id)
-        row.operator("graph.apply_bouncy_easing", text="Bouncy", icon_value=pcoll["BOUNCY"].icon_id)
-        
-        layout.operator("graph.apply_weird_easing", text="Weird", icon_value=pcoll["WEIRD"].icon_id)
+
+        layout.operator("graph.apply_bouncy_easing", text="Bouncy", icon_value=pcoll["BOUNCY"].icon_id)
 
         # Custom presets
         layout.separator()
