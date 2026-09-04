@@ -1,7 +1,7 @@
 bl_info = {
     "name": "EaseIt",
     "author": "Andy Cuccaro",
-    "version": (2, 0, 2),
+    "version": (2, 0, 3),
     "blender": (2, 80, 0),
     "location": "Graph Editor > Sidebar > Easing",
     "description": "Apply easing presets to selected keyframes",
@@ -636,13 +636,21 @@ class GRAPH_OT_apply_easing_base(bpy.types.Operator):
                 kf2.handle_left_type = 'ALIGNED'
                 kf2.handle_left = (kf2.co.x - handle_extension_in, kf2.co.y)
                 
-                # Step 4: Restore outer handle types to original
+                # Step 4: Restore outer handle types to original.
+                # VECTOR/AUTO/AUTO_CLAMPED recompute their own position from
+                # whatever curve structure exists NOW (which isn't the
+                # original one anymore), so restoring that exact type would
+                # silently ignore the position we captured and produce a
+                # wrong direction. For those, we restore as FREE instead —
+                # same visual position, just a type Blender won't override.
                 if is_first_keyframe:
-                    kf1.handle_left_type = original_data[kf1_idx]['handle_left_type']
+                    outer_type = original_data[kf1_idx]['handle_left_type']
+                    kf1.handle_left_type = 'FREE' if outer_type in AUTO_RECALC_HANDLE_TYPES else outer_type
                     kf1.handle_left = original_data[kf1_idx]['handle_left_pos']
                 
                 if is_last_keyframe:
-                    kf2.handle_right_type = original_data[kf2_idx]['handle_right_type']
+                    outer_type = original_data[kf2_idx]['handle_right_type']
+                    kf2.handle_right_type = 'FREE' if outer_type in AUTO_RECALC_HANDLE_TYPES else outer_type
                     kf2.handle_right = original_data[kf2_idx]['handle_right_pos']
             
             # Step 5: Restore interpolation type of the last selected keyframe
@@ -987,26 +995,31 @@ class GRAPH_OT_apply_advanced_easing_base(bpy.types.Operator):
                 # the outer handle would stay at whatever value spatial_data
                 # calculated for it, even though the user never asked to
                 # change the curve outside the selection.
-                new_first_kf.handle_left_type = first_kf_outer_type
+                #
+                # VECTOR/AUTO/AUTO_CLAMPED recompute their own position from
+                # whatever curve structure exists NOW (the just-rebuilt
+                # selection, not the original neighbors), so restoring that
+                # exact type would silently ignore the position we captured
+                # and produce a wrong direction. For those, we restore as
+                # FREE instead — same visual position, just a type Blender
+                # won't override.
+                first_kf_restore_type = 'FREE' if first_kf_outer_type in AUTO_RECALC_HANDLE_TYPES else first_kf_outer_type
+                last_kf_restore_type = 'FREE' if last_kf_outer_type in AUTO_RECALC_HANDLE_TYPES else last_kf_outer_type
+
+                new_first_kf.handle_left_type = first_kf_restore_type
                 new_first_kf.handle_left = first_kf_outer_pos
 
-                new_last_kf.handle_right_type = last_kf_outer_type
+                new_last_kf.handle_right_type = last_kf_restore_type
                 new_last_kf.handle_right = last_kf_outer_pos
 
                 # Step: if the INNER handle (facing into the selection) ended
                 # up cotangent with the restored OUTER handle, copy the outer
-                # handle's type onto the inner one — but only for handle
-                # types that respect a manually-set position (FREE/ALIGNED).
-                # AUTO/AUTO_CLAMPED/VECTOR recompute their own position, which
-                # would fight with the preset's carefully calculated handle
-                # position, so we deliberately skip copying those.
-                if (first_kf_outer_type not in AUTO_RECALC_HANDLE_TYPES
-                        and is_cotangent(new_first_kf)):
-                    new_first_kf.handle_right_type = first_kf_outer_type
+                # handle's (now-restored) type onto the inner one.
+                if is_cotangent(new_first_kf):
+                    new_first_kf.handle_right_type = first_kf_restore_type
 
-                if (last_kf_outer_type not in AUTO_RECALC_HANDLE_TYPES
-                        and is_cotangent(new_last_kf)):
-                    new_last_kf.handle_left_type = last_kf_outer_type
+                if is_cotangent(new_last_kf):
+                    new_last_kf.handle_left_type = last_kf_restore_type
 
             # Update the fcurve
             fcurve.update()
